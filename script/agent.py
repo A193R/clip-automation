@@ -17,21 +17,31 @@ HIGHLIGHT_FILE = "highlight.mp4"
 FINAL_OUTPUT = "final_clip.mp4"
 
 def download_video(video_url):
-    print("⬇️ Lade Video herunter mit authentifizierten Cookies...")
-    # Schreibe die Cookies aus den GitHub Secrets temporär in eine Datei
+    print("⬇️ Lade Video herunter (mit yt-dlp Anti-Bot-Client)...")
+    
+    # Optional: Falls du YouTube-Cookies über GitHub Secrets (YOUTUBE_COOKIES) hinterlegt hast,
+    # werden diese hier automatisch als temporäre Datei geschrieben.
     cookies_content = os.environ.get("YOUTUBE_COOKIES")
     if cookies_content:
         with open("cookies.txt", "w") as f:
             f.write(cookies_content)
     
-    # yt-dlp Befehl mit Cookie-Parameter ausführen
-    subprocess.run([
+    # Basis-Befehl für yt-dlp mit Anti-Bot-Parametern
+    cmd = [
         "yt-dlp", 
-        "--cookies", "cookies.txt",
+        "--extractor-args", "youtube:player_client=ios,web",
         "-f", "bv*[height<=1080]+ba/b[height<=1080]", 
         "-o", OUTPUT_FILE, 
         video_url
-    ], check=True))
+    ]
+    
+    # Fügt die Cookie-Datei hinzu, falls sie vorhanden ist oder übergeben wurde
+    if os.path.exists("cookies.txt"):
+        cmd.insert(1, "--cookies")
+        cmd.insert(2, "cookies.txt")
+    
+    # Führt den Download aus
+    subprocess.run(cmd, check=True)
 
 def analyze_with_gemini():
     print("🧠 Analysiere Video mit Gemini...")
