@@ -108,7 +108,7 @@ def send_to_telegram():
     print("Telegram Antwort:", response.status_code)
 
 if __name__ == "__main__":
-    download_video()
+    download_video(VIDEO_URL)
     start_time = analyze_with_gemini()
     cut_and_arrange_clip(start_time)
     send_to_telegram()
