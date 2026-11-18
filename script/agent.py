@@ -11,40 +11,40 @@ TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
 
 # URL zum Video oder VOD
 VIDEO_URL = "https://www.youtube.com/watch?v=p2NUAp4X-TQ" 
+
 OUTPUT_FILE = "raw_video.mp4"
 HIGHLIGHT_FILE = "highlight.mp4"
 FINAL_OUTPUT = "final_clip.mp4"
 
 def download_video(video_url):
-    print("⬇️ Lade Video herunter mit Browser-Cookies...")
+    print("⬇️ Lade Video herunter (mit yt-dlp Anti-Bot-Client)...")
     subprocess.run([
         "yt-dlp", 
-        "--cookies", "cookies.txt",
+        "--extractor-args", "youtube:player_client=ios,web",
         "-f", "bv*[height<=1080]+ba/b[height<=1080]", 
         "-o", OUTPUT_FILE, 
         video_url
     ], check=True)
 
 def analyze_with_gemini():
-    print("🧠 Analysiere Video mit Gemini (Text, Audio/Lautstärke & visuelle Highlights)...")
+    print("🧠 Analysiere Video mit Gemini...")
     client = genai.Client(api_key=GEMINI_API_KEY)
     
     # Videodatei hochladen
     uploaded_file = client.files.upload(file=OUTPUT_FILE)
     
-    # Erweiteter Prompt für Text, laute Reaktionen / Audio und Hook-Auswahl
     prompt = """
     Analysiere dieses Video gründlich. Suche nach dem absolut besten Moment, der sich perfekt als Hook eignet.
     Berücksichtige dabei:
-    - Auffällige gesprochene Sätze oder spannender Text (Keywords, Dialoge).
-    - Audio-Spitzen (plötzliche laute Reaktionen, Schreie, Gelächter, laute Soundeffekte).
+    - Auffällige gesprochene Sätze oder spannender Text.
+    - Audio-Spitzen (plötzliche laute Reaktionen, Schreie, Gelächter).
     - Visuelle Action-Momente.
     
     Regel: Der gesuchte Highlight-Clip soll als Hook dienen und exakt 60 Sekunden lang sein.
     Gib mir den Startzeitpunkt dieses Moments im Format HH:MM:SS zurück.
     
     Antworte ausschließlich im folgenden JSON-Format:
-    {"start": "00:01:20", "description": "Spannender Dialog / Lauter Reziehungs-Moment als Hook"}
+    {"start": "00:01:20", "description": "Spannender Highlight-Moment"}
     """
     
     response = client.models.generate_content(
@@ -55,43 +55,24 @@ def analyze_with_gemini():
     # Aufräumen bei Google
     client.files.delete(name=uploaded_file.name)
     
-    # JSON parsen
     clean_text = response.text.replace("```json", "").replace("```", "").strip()
     data = json.loads(clean_text)
     return data["start"]
 
-def cut_and_arrange_clip(start_time):
+def cut_format_and_arrange(start_time):
     print(f"✂️ Schneide 60-Sekunden-Highlight ab {start_time} aus...")
     
-    # 1. Schritt: Den 60-sekündigen Highlight-Clip ausschneiden (-t 60 für exakt 60 Sekunden)
     cmd_cut = [
         "ffmpeg", "-y", 
         "-ss", start_time, 
         "-i", OUTPUT_FILE, 
         "-t", "60", 
-        "-b:v", "1500k", # Bitrate optimiert fürs Telegram-Größenlimit
         "-c:v", "libx264", "-c:a", "aac", 
         HIGHLIGHT_FILE
     ]
     subprocess.run(cmd_cut, check=True)
     
-    print("🔗 Setze das Highlight als Hook an den Anfang des Gesamt-Videos...")
-    
-    # 2. Schritt: Concat-Liste erstellen (Zuerst das 60s-Highlight, dann das komplette Originalvideo)
-    with open("list.txt", "w") as f:
-        f.write(f"file '{HIGHLIGHT_FILE}'\n")
-        f.write(f"file '{OUTPUT_FILE}'\n")
-        
-    # 3. Schritt: Beide Teile nahtlos zusammenfügen
-    cmd_concat = [
-        "ffmpeg", "-y", 
-        "-f", "concat", 
-        "-safe", "0", 
-        "-i", "list.txt", 
-        "-c:v", "libx264", "-c:a", "aac", 
-        FINAL_OUTPUT
-    ]
-    subprocess.run(cmd_concat, check=True)
+    os.rename(HIGHLIGHT_FILE, FINAL_OUTPUT)
 
 def send_to_telegram():
     print("📤 Sende Clip an Telegram...")
@@ -101,7 +82,7 @@ def send_to_telegram():
             url, 
             data={
                 "chat_id": TELEGRAM_CHAT_ID, 
-                "caption": "🔥 **Automatischer 60s-Highlight-Clip (als Hook an den Anfang gesetzt)!**"
+                "caption": "🔥📱 **Automatisierter Highlight-Clip mit Gemini & FFmpeg!**"
             }, 
             files={"video": video_file}
         )
@@ -110,5 +91,5 @@ def send_to_telegram():
 if __name__ == "__main__":
     download_video(VIDEO_URL)
     start_time = analyze_with_gemini()
-    cut_and_arrange_clip(start_time)
+    cut_format_and_arrange(start_time)
     send_to_telegram()
