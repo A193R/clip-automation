@@ -17,26 +17,21 @@ HIGHLIGHT_FILE = "highlight.mp4"
 FINAL_OUTPUT = "final_clip.mp4"
 
 def download_video(video_url):
-    print("⬇️ Lade Video herunter (mit robustem Android/Web-Client)...")
+    print("⬇️ Lade Video mit Account-Cookies herunter...")
     
-    # Optional: Falls du YouTube-Cookies über GitHub Secrets hinterlegt hast
+    # Liest die Cookies aus den GitHub Secrets und schreibt sie temporär in eine Datei
     cookies_content = os.environ.get("YOUTUBE_COOKIES")
     if cookies_content:
         with open("cookies.txt", "w") as f:
             f.write(cookies_content)
     
-    # Wir nutzen hier 'android,web' statt 'ios,web', um JavaScript-Fehler auf dem Server zu umgehen
     cmd = [
         "yt-dlp", 
-        "--extractor-args", "youtube:player_client=android,web",
+        "--cookies", "cookies.txt",
         "-f", "bv*[height<=1080]+ba/b[height<=1080]", 
         "-o", OUTPUT_FILE, 
         video_url
     ]
-    
-    if os.path.exists("cookies.txt"):
-        cmd.insert(1, "--cookies")
-        cmd.insert(2, "cookies.txt")
     
     subprocess.run(cmd, check=True)
 
