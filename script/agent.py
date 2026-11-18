@@ -10,7 +10,7 @@ TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
 
 # URL zum Video oder VOD
-VIDEO_URL = "https://www.youtube.com/watch?v=..." 
+VIDEO_URL = https://www.youtube.com/watch?v=2f7qEDc-DEA 
 OUTPUT_FILE = "raw_video.mp4"
 HIGHLIGHT_FILE = "highlight.mp4"
 FINAL_OUTPUT = "final_clip.mp4"
