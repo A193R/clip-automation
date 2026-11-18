@@ -1,9 +1,10 @@
-name: GTA 6 Telegram Clip Agent
+name: Multi-Clip Telegram Agent (9:16 & Subtitles)
 
 on:
-  schedule:
-    - cron: '0 18 * * *' # Läuft jeden Tag automatisch um 18:00 Uhr UTC
-  workflow_dispatch: # Erlaubt den manuellen Start über das GitHub-Webinterface
+  workflow_dispatch:
+  push:
+    paths:
+      - 'raw_video.mp4'
 
 jobs:
   run-agent:
@@ -17,15 +18,14 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install dependencies (FFmpeg, yt-dlp, Google GenAI)
+      - name: Install dependencies (FFmpeg, Google GenAI, Requests)
         run: |
           sudo apt-get update && sudo apt-get install -y ffmpeg
-          pip install yt-dlp google-genai requests
+          pip install google-genai requests
 
       - name: Run Python Agent
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          YOUTUBE_COOKIES: ${{ secrets.YOUTUBE_COOKIES }}
         run: python script/agent.py
