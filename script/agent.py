@@ -16,10 +16,10 @@ HIGHLIGHT_FILE = "highlight.mp4"
 FINAL_OUTPUT = "final_clip.mp4"
 
 def download_video(video_url):
-    print("⬇️ Lade Video herunter (mit yt-dlp Fallback-Parametern)...")
+    print("⬇️ Lade Video herunter (mit yt-dlp Anti-Bot-Client)...")
     subprocess.run([
         "yt-dlp", 
-        "--extractor-args", "youtube:player_client=android,web",
+        "--extractor-args", "youtube:player_client=ios,web",
         "-f", "bv*[height<=1080]+ba/b[height<=1080]", 
         "-o", OUTPUT_FILE, 
         video_url
