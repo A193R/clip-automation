@@ -25,6 +25,12 @@ def download_video(video_url):
         video_url
     ], check=True)
 
+if __name__ == "__main__":
+    download_video(VIDEO_URL)
+    start_time = analyze_with_gemini()
+    cut_format_and_arrange(start_time)
+    send_to_telegram()
+
 def analyze_with_gemini():
     print("🧠 Analysiere Video mit Gemini (Text, Audio/Lautstärke & visuelle Highlights)...")
     client = genai.Client(api_key=GEMINI_API_KEY)
