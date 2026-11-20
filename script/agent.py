@@ -9,7 +9,7 @@ GEMINI_API_KEY = "DEIN_GEMINI_API_KEY"
 DISCORD_WEBHOOK_URL = "DEINE_DISCORD_WEBHOOK_URL" # Oder Telegram Bot Token/Chat ID
 
 # Die URL des Videos, das du lokal herunterladen willst
-VIDEO_URL = "https://www.youtube.com/watch?v=..." 
+VIDEO_URL = "https://www.youtube.com/@yudiwahyudi" 
 
 OUTPUT_FILE = "raw_video.mp4"
 HIGHLIGHT_FILE = "highlight.mp4"
